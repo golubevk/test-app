@@ -16,16 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # we tell Github to only execute this step if we're on our master branch (so we don't put unfinished branches in production)
     steps:
-      - name: Deploying to production
-        uses: appleboy/ssh-action@master # An action made to control Linux servers
-        with: # We set all our secrets here for the action, these won't be shown in the action logs
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd test-app # we move into our app's folder
-            git pull # we pull any changes from git
-            npm prune # we remove any unused dependencies
-            npm install # we install any missing dependencies
-            pm2 reload all # we reload the app via PM2
+      - uses: actions/checkout@v2 # fetches your commit to test it
+      - name: Use Node.js ${{ matrix.node-version }} # names our step
+        uses: actions/setup-node@v1 # downloads node and npm
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install # installs your dependencies
+      - run: npm run build
